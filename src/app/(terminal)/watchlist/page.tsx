@@ -77,13 +77,13 @@ export default function WatchlistPage() {
           </Button>
         </Card>
       ) : (
-        <Card>
+        <Card className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Token</TableHead>
                 <TableHead className="text-right">Price</TableHead>
-                <TableHead className="text-right">Value of 1 SOL</TableHead>
+                <TableHead className="text-right hidden sm:table-cell">Value of 1 SOL</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
@@ -128,7 +128,7 @@ export default function WatchlistPage() {
                         fmtUsd(price)
                       )}
                     </TableCell>
-                    <TableCell className="text-right font-mono text-sm text-muted-foreground py-2.5">
+                    <TableCell className="text-right font-mono text-sm text-muted-foreground py-2.5 hidden sm:table-cell">
                       {tokensPerSol > 0
                         ? tokensPerSol >= 1
                           ? tokensPerSol.toLocaleString(undefined, {

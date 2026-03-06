@@ -59,11 +59,11 @@ export default function TradePage({
   return (
     <div className="flex-1 flex flex-col min-h-0">
       {/* Top: Chart + Swap */}
-      <div className="flex-1 p-4 pb-0 gap-4 flex flex-col lg:flex-row min-h-0">
+      <div className="flex-1 p-2 sm:p-4 pb-0 gap-4 flex flex-col lg:flex-row min-h-0">
         {/* Chart Section */}
         <div className="flex-1 flex flex-col min-h-0 min-w-0">
           {/* Token Info Bar */}
-          <div className="flex items-center gap-3 mb-3 px-1">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 px-1">
             {loading ? (
               <Skeleton className="h-8 w-48" />
             ) : token ? (
@@ -72,13 +72,13 @@ export default function TradePage({
                   <img
                     src={token.logoURI}
                     alt={token.symbol}
-                    className="w-7 h-7 rounded-full"
+                    className="w-6 h-6 sm:w-7 sm:h-7 rounded-full"
                   />
                 )}
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-base">{token.symbol}</span>
-                    <span className="text-muted-foreground text-sm">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <span className="font-bold text-sm sm:text-base">{token.symbol}</span>
+                    <span className="text-muted-foreground text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none">
                       {token.name}
                     </span>
                   </div>
@@ -103,7 +103,7 @@ export default function TradePage({
                   ) : (
                     <Eye className="mr-1 h-3.5 w-3.5" />
                   )}
-                  {isWatched ? "Unwatch" : "Watch"}
+                  <span className="hidden sm:inline">{isWatched ? "Unwatch" : "Watch"}</span>
                 </Button>
                 <Button
                   variant="ghost"
@@ -118,9 +118,9 @@ export default function TradePage({
                     <Copy className="h-3.5 w-3.5" />
                   )}
                 </Button>
-                <div className="ml-auto flex items-center gap-4 text-sm">
+                <div className="ml-auto flex items-center gap-2 sm:gap-4 text-sm">
                   {price !== null && (
-                    <span className="font-mono font-semibold">
+                    <span className="font-mono font-semibold text-xs sm:text-sm">
                       ${price < 0.01 ? price.toExponential(2) : price.toFixed(4)}
                     </span>
                   )}
@@ -137,12 +137,12 @@ export default function TradePage({
                     </span>
                   )}
                   {poolData?.volume?.h24 && (
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-muted-foreground text-xs hidden sm:inline">
                       Vol ${(poolData.volume.h24 / 1e6).toFixed(1)}M
                     </span>
                   )}
                   {poolData?.liquidity?.usd && (
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-muted-foreground text-xs hidden sm:inline">
                       Liq ${(poolData.liquidity.usd / 1e6).toFixed(1)}M
                     </span>
                   )}
@@ -156,7 +156,7 @@ export default function TradePage({
           </div>
 
           {/* Chart */}
-          <div className="flex-1 min-h-[400px]">
+          <div className="flex-1 min-h-[250px] md:min-h-[400px]">
             <ChartContainer pairAddress={poolData?.pairAddress ?? null} />
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function TradePage({
       </div>
 
       {/* Bottom: Positions + Calculator */}
-      <div className="p-4 pt-3 gap-4 flex flex-col lg:flex-row">
+      <div className="p-2 sm:p-4 pt-3 gap-4 flex flex-col lg:flex-row">
         <div className="flex-1 min-w-0">
           <Card>
             <div className="px-4 pt-3 pb-1">

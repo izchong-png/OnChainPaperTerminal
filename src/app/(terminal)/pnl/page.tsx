@@ -221,7 +221,7 @@ export default function PnLPage() {
     return (
       <div className="p-4 max-w-5xl mx-auto space-y-4">
         <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-20" />
           ))}
@@ -253,7 +253,7 @@ export default function PnLPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="text-xs text-muted-foreground mb-1">Total P&L</div>
@@ -341,12 +341,12 @@ export default function PnLPage() {
           </p>
         </Card>
       ) : (
-        <Card>
+        <Card className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Token</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead className="hidden sm:table-cell">Date</TableHead>
                 <TableHead className="text-right">Trades</TableHead>
                 <TableHead className="text-right">Invested</TableHead>
                 <TableHead className="text-right">Realized</TableHead>
@@ -380,7 +380,7 @@ export default function PnLPage() {
                       </span>
                     </Link>
                   </TableCell>
-                  <TableCell className="py-2.5 text-xs text-muted-foreground whitespace-nowrap">
+                  <TableCell className="py-2.5 text-xs text-muted-foreground whitespace-nowrap hidden sm:table-cell">
                     {row.status === "closed" ? (
                       isSameDay(row.firstTradeAt, row.lastTradeAt) ? (
                         <span>{fmtDate(row.firstTradeAt)}</span>

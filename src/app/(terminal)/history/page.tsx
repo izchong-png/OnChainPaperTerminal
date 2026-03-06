@@ -41,7 +41,7 @@ export default function HistoryPage() {
           No trades yet. Start trading to see your history here.
         </Card>
       ) : (
-        <Card>
+        <Card className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -52,7 +52,7 @@ export default function HistoryPage() {
                 <TableHead className="text-right">Amount In</TableHead>
                 <TableHead className="text-right">Amount Out</TableHead>
                 <TableHead className="text-right">Value</TableHead>
-                <TableHead className="text-right">Impact</TableHead>
+                <TableHead className="text-right hidden sm:table-cell">Impact</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -111,7 +111,7 @@ export default function HistoryPage() {
                   <TableCell className="text-right font-mono text-sm">
                     ${trade.totalValueUsd.toFixed(2)}
                   </TableCell>
-                  <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                  <TableCell className="text-right font-mono text-xs text-muted-foreground hidden sm:table-cell">
                     {trade.priceImpactPct.toFixed(2)}%
                   </TableCell>
                 </TableRow>

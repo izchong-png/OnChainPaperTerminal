@@ -295,6 +295,7 @@ export function PositionsTable({ compact }: PositionsTableProps) {
 
   return (
     <>
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -323,6 +324,7 @@ export function PositionsTable({ compact }: PositionsTableProps) {
           ))}
         </TableBody>
       </Table>
+      </div>
 
       <Dialog open={journalOpen} onOpenChange={setJournalOpen}>
         <DialogContent className="max-w-sm">

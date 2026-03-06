@@ -51,8 +51,9 @@ export function InstantTradePopup({ token, price }: InstantTradePopupProps) {
   // Initialize position to center of viewport on first open
   const handleOpen = useCallback(() => {
     if (!pos) {
+      const panelWidth = Math.min(288, window.innerWidth - 24);
       setPos({
-        x: Math.round(window.innerWidth / 2 - 144),
+        x: Math.round((window.innerWidth - panelWidth) / 2),
         y: Math.round(window.innerHeight / 2 - 200),
       });
     }
@@ -176,7 +177,7 @@ export function InstantTradePopup({ token, price }: InstantTradePopupProps) {
         createPortal(
           <div
             ref={panelRef}
-            className="fixed z-50 w-72 rounded-lg border border-border bg-background shadow-xl"
+            className="fixed z-50 w-[calc(100vw-1.5rem)] sm:w-72 rounded-lg border border-border bg-background shadow-xl"
             style={{ left: pos.x, top: pos.y }}
           >
             {/* Drag Handle + Close */}

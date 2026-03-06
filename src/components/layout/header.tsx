@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, BarChart3, History, Wallet, Plus, Eye, TrendingUp } from "lucide-react";
+import { Search, BarChart3, History, Wallet, Plus, Eye, TrendingUp, Menu, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [addSolOpen, setAddSolOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [solAmount, setSolAmount] = useState("10");
   const hydrated = useHydration();
   const solBalance = usePortfolioStore((s) => s.balances[SOL_MINT]?.amount ?? 0);
@@ -41,8 +42,18 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex h-12 items-center gap-4 px-4">
-          <Link href="/" className="flex items-center gap-2 font-bold text-sm">
+        <div className="flex h-12 items-center gap-2 sm:gap-4 px-3 sm:px-4">
+          {/* Mobile menu toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 md:hidden shrink-0"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </Button>
+
+          <Link href="/" className="flex items-center gap-2 font-bold text-sm shrink-0">
             <div className="w-6 h-6 rounded bg-primary flex items-center justify-center text-primary-foreground text-xs font-black">
               P
             </div>
@@ -54,14 +65,15 @@ export function Header() {
             className="flex-1 max-w-sm justify-start text-muted-foreground text-sm h-8"
             onClick={() => setSearchOpen(true)}
           >
-            <Search className="mr-2 h-3.5 w-3.5" />
+            <Search className="mr-2 h-3.5 w-3.5 shrink-0" />
             <span className="hidden sm:inline">Search tokens...</span>
             <kbd className="ml-auto hidden sm:inline-flex pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
               <span className="text-xs">⌘</span>K
             </kbd>
           </Button>
 
-          <nav className="flex items-center gap-1">
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
             <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
               <Link href="/portfolio">
                 <BarChart3 className="mr-1.5 h-3.5 w-3.5" />
@@ -88,12 +100,14 @@ export function Header() {
             </Button>
           </nav>
 
-          <div className="flex items-center gap-1.5 ml-auto">
-            <div className="flex items-center gap-1.5 bg-secondary rounded-md px-2.5 py-1">
+          <div className="flex items-center gap-1.5 ml-auto shrink-0">
+            <div className="flex items-center gap-1.5 bg-secondary rounded-md px-2 sm:px-2.5 py-1">
               <Wallet className="h-3.5 w-3.5 text-primary" />
               {hydrated ? (
                 <span className="font-mono text-xs font-medium">
-                  {solBalance.toFixed(4)} SOL
+                  <span className="hidden sm:inline">{solBalance.toFixed(4)}</span>
+                  <span className="sm:hidden">{solBalance.toFixed(2)}</span>
+                  {" "}SOL
                 </span>
               ) : (
                 <Skeleton className="h-3 w-16" />
@@ -110,6 +124,36 @@ export function Header() {
             </Button>
           </div>
         </div>
+
+        {/* Mobile nav dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-border bg-background px-3 py-2 space-y-1">
+            <Button variant="ghost" size="sm" className="w-full justify-start h-9 text-sm" asChild onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/portfolio">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Portfolio
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" className="w-full justify-start h-9 text-sm" asChild onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/pnl">
+                <TrendingUp className="mr-2 h-4 w-4" />
+                P&L
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" className="w-full justify-start h-9 text-sm" asChild onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/history">
+                <History className="mr-2 h-4 w-4" />
+                History
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" className="w-full justify-start h-9 text-sm" asChild onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/watchlist">
+                <Eye className="mr-2 h-4 w-4" />
+                Watchlist
+              </Link>
+            </Button>
+          </div>
+        )}
       </header>
 
       <TokenSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />

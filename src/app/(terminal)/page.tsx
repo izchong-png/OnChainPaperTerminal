@@ -33,7 +33,7 @@ export default function DashboardPage() {
   return (
     <div className="p-4 max-w-6xl mx-auto space-y-6">
       {/* Portfolio Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="text-xs text-muted-foreground mb-1">

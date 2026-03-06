@@ -36,7 +36,7 @@ export default function PortfolioPage() {
     return (
       <div className="p-4 max-w-5xl mx-auto space-y-4">
         <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Skeleton className="h-20" />
           <Skeleton className="h-20" />
           <Skeleton className="h-20" />
@@ -51,7 +51,7 @@ export default function PortfolioPage() {
       <h1 className="font-bold text-lg">Portfolio</h1>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="text-xs text-muted-foreground mb-1">

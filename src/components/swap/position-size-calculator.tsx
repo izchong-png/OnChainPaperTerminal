@@ -115,7 +115,7 @@ export function PositionSizeCalculator({
       </CardHeader>
       <CardContent className="px-4 pb-4 space-y-3">
         {/* Inputs */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div>
             <div className="flex items-center gap-1 mb-1">
               <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
