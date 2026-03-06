@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Copy } from "lucide-react";
+import { Download, Copy, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -203,6 +203,22 @@ export function TradeCardDialog({ open, onOpenChange, data }: TradeCardDialogPro
     });
   };
 
+  const copyImage = async () => {
+    try {
+      const canvas = document.createElement("canvas");
+      drawCard(canvas, data);
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Failed"))), "image/png");
+      });
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob }),
+      ]);
+      toast.success("Image copied to clipboard");
+    } catch {
+      toast.error("Failed to copy image");
+    }
+  };
+
   const downloadImage = () => {
     setDownloading(true);
     try {
@@ -314,9 +330,13 @@ export function TradeCardDialog({ open, onOpenChange, data }: TradeCardDialogPro
             <Copy className="h-3.5 w-3.5 mr-1.5" />
             Copy Text
           </Button>
+          <Button variant="outline" className="flex-1" onClick={copyImage}>
+            <ImageIcon className="h-3.5 w-3.5 mr-1.5" />
+            Copy Image
+          </Button>
           <Button className="flex-1" onClick={downloadImage} disabled={downloading}>
             <Download className="h-3.5 w-3.5 mr-1.5" />
-            {downloading ? "Saving..." : "Save Image"}
+            Save Image
           </Button>
         </div>
       </DialogContent>
