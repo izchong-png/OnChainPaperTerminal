@@ -7,6 +7,7 @@ import { PositionsTable } from "@/components/portfolio/positions-table";
 import { usePortfolioStore } from "@/stores/portfolio-store";
 import { useTokenPrices } from "@/hooks/use-token-price";
 import { useHydration } from "@/hooks/use-hydration";
+import { LatencyIndicator } from "@/components/ui/latency-indicator";
 import { SOL_MINT } from "@/lib/constants";
 
 function safe(n: number): number {
@@ -17,7 +18,7 @@ export default function PortfolioPage() {
   const hydrated = useHydration();
   const balances = usePortfolioStore((s) => s.balances);
   const holdingMints = useMemo(() => Object.keys(balances), [balances]);
-  const { prices } = useTokenPrices(holdingMints);
+  const { prices, lastUpdated } = useTokenPrices(holdingMints);
 
   const totalValue = Object.entries(balances).reduce((s, [mint, bal]) => {
     return s + bal.amount * (prices[mint] ?? 0);
@@ -48,7 +49,10 @@ export default function PortfolioPage() {
 
   return (
     <div className="p-4 max-w-5xl mx-auto space-y-4">
-      <h1 className="font-bold text-lg">Portfolio</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="font-bold text-lg">Portfolio</h1>
+        <LatencyIndicator lastUpdated={lastUpdated} />
+      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

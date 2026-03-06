@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
-import { CalendarDays, BookOpen } from "lucide-react";
+import { CalendarDays, BookOpen, Share2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -33,6 +33,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { useHydration } from "@/hooks/use-hydration";
 import { usePnLData, type DailyPnL } from "@/hooks/use-pnl";
 import { useJournalStore } from "@/stores/journal-store";
+import { TradeCardDialog } from "@/components/share/trade-card";
+import { TokenPnL } from "@/types";
 
 function safe(n: number): number {
   return isFinite(n) ? n : 0;
@@ -198,6 +200,9 @@ export default function PnLPage() {
   const [journalSymbol, setJournalSymbol] = useState("");
   const [journalDraft, setJournalDraft] = useState("");
 
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareData, setShareData] = useState<TokenPnL | null>(null);
+
   const openJournal = (mint: string, symbol: string) => {
     setJournalMint(mint);
     setJournalSymbol(symbol);
@@ -354,6 +359,7 @@ export default function PnLPage() {
                 <TableHead className="text-right">Total P&L</TableHead>
                 <TableHead className="text-center">Status</TableHead>
                 <TableHead className="text-center w-10">Journal</TableHead>
+                <TableHead className="text-center w-10">Share</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -496,6 +502,20 @@ export default function PnLPage() {
                       <BookOpen className="h-3.5 w-3.5" />
                     </Button>
                   </TableCell>
+                  <TableCell className="text-center py-2.5">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground"
+                      onClick={() => {
+                        setShareData(row);
+                        setShareOpen(true);
+                      }}
+                      title="Share trade card"
+                    >
+                      <Share2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -535,6 +555,8 @@ export default function PnLPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <TradeCardDialog open={shareOpen} onOpenChange={setShareOpen} data={shareData} />
     </div>
   );
 }

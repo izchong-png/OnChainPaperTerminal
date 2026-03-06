@@ -6,6 +6,7 @@ import { getPrices, fetchPriceData } from "@/lib/api/jupiter";
 export function useTokenPrice(mint: string | null) {
   const [price, setPrice] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const fetchPrice = useCallback(async () => {
@@ -17,6 +18,7 @@ export function useTokenPrice(mint: string | null) {
       const prices = await getPrices([mint]);
       if (!controller.signal.aborted && prices[mint] !== undefined) {
         setPrice(prices[mint]);
+        setLastUpdated(Date.now());
       }
     } catch {
       // Silently fail, keep previous price
@@ -25,6 +27,7 @@ export function useTokenPrice(mint: string | null) {
 
   useEffect(() => {
     setPrice(null);
+    setLastUpdated(null);
     setLoading(true);
 
     if (document.visibilityState === "visible") {
@@ -45,13 +48,14 @@ export function useTokenPrice(mint: string | null) {
     };
   }, [fetchPrice]);
 
-  return { price, loading };
+  return { price, loading, lastUpdated };
 }
 
 export function useTokenPrices(mints: string[]) {
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [marketCaps, setMarketCaps] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   // Stabilize mints reference to prevent infinite re-renders
   const mintsKey = mints.join(",");
@@ -71,6 +75,7 @@ export function useTokenPrices(mints: string[]) {
       if (!controller.signal.aborted) {
         setPrices((prev) => ({ ...prev, ...data.prices }));
         setMarketCaps((prev) => ({ ...prev, ...data.marketCaps }));
+        setLastUpdated(Date.now());
       }
     } catch {
       // Keep previous prices
@@ -99,5 +104,5 @@ export function useTokenPrices(mints: string[]) {
     };
   }, [fetchPrices]);
 
-  return { prices, marketCaps, loading };
+  return { prices, marketCaps, loading, lastUpdated };
 }

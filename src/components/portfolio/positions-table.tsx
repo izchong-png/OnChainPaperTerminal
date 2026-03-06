@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
-import { BookOpen, ShieldAlert, Target, X, Clock } from "lucide-react";
+import { BookOpen, ShieldAlert, Target, X, Clock, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Table,
@@ -29,7 +29,9 @@ import { useOrdersStore } from "@/stores/orders-store";
 import { useTokenPrices } from "@/hooks/use-token-price";
 import { useHydration } from "@/hooks/use-hydration";
 import { SOL_MINT } from "@/lib/constants";
-import { Position } from "@/types";
+import { LatencyIndicator } from "@/components/ui/latency-indicator";
+import { Position, TokenPnL } from "@/types";
+import { TradeCardDialog } from "@/components/share/trade-card";
 
 function safe(n: number): number {
   return isFinite(n) ? n : 0;
@@ -70,6 +72,7 @@ interface PositionRowProps {
   hasOrders: boolean;
   onOpenSlTp: (mint: string, symbol: string) => void;
   onOpenJournal: (mint: string, symbol: string) => void;
+  onShare: (pos: Position) => void;
 }
 
 const PositionRow = memo(function PositionRow({
@@ -80,6 +83,7 @@ const PositionRow = memo(function PositionRow({
   hasOrders,
   onOpenSlTp,
   onOpenJournal,
+  onShare,
 }: PositionRowProps) {
   return (
     <TableRow className="cursor-pointer hover:bg-accent">
@@ -182,6 +186,23 @@ const PositionRow = memo(function PositionRow({
           <BookOpen className="h-3.5 w-3.5" />
         </Button>
       </TableCell>
+      {pos.token.mint !== SOL_MINT && (
+        <TableCell className="text-center py-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-muted-foreground"
+            onClick={(e) => {
+              e.stopPropagation();
+              onShare(pos);
+            }}
+            title="Share trade card"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+          </Button>
+        </TableCell>
+      )}
+      {pos.token.mint === SOL_MINT && <TableCell />}
     </TableRow>
   );
 });
@@ -194,7 +215,7 @@ export function PositionsTable({ compact }: PositionsTableProps) {
   const hydrated = useHydration();
   const balances = usePortfolioStore((s) => s.balances);
   const holdingMints = useMemo(() => Object.keys(balances), [balances]);
-  const { prices, marketCaps, loading: pricesLoading } = useTokenPrices(holdingMints);
+  const { prices, marketCaps, loading: pricesLoading, lastUpdated } = useTokenPrices(holdingMints);
 
   const journalEntries = useJournalStore((s) => s.entries);
   const setJournalEntry = useJournalStore((s) => s.setEntry);
@@ -247,6 +268,44 @@ export function PositionsTable({ compact }: PositionsTableProps) {
     setTpInput("");
   };
 
+  // Share dialog state
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareData, setShareData] = useState<TokenPnL | null>(null);
+  const trades = usePortfolioStore((s) => s.trades);
+
+  const openShare = useCallback((pos: Position) => {
+    const tokenTrades = trades.filter(
+      (t) => t.inputToken.mint === pos.token.mint || t.outputToken.mint === pos.token.mint
+    );
+    const buys = tokenTrades.filter((t) => t.outputToken.mint === pos.token.mint).length;
+    const sells = tokenTrades.filter((t) => t.inputToken.mint === pos.token.mint).length;
+    const firstTrade = tokenTrades.length > 0 ? tokenTrades[tokenTrades.length - 1].timestamp : Date.now();
+    const lastTrade = tokenTrades.length > 0 ? tokenTrades[0].timestamp : Date.now();
+
+    setShareData({
+      token: pos.token,
+      mint: pos.token.mint,
+      totalBuys: buys,
+      totalSells: sells,
+      totalBoughtUsd: pos.costBasisUsd,
+      totalSoldUsd: 0,
+      avgEntryPrice: pos.costBasisPerToken,
+      currentAmount: pos.amount,
+      currentPrice: pos.currentPriceUsd,
+      currentValueUsd: pos.currentValueUsd,
+      remainingCostBasis: pos.costBasisUsd,
+      realizedPnlUsd: 0,
+      unrealizedPnlUsd: pos.unrealizedPnlUsd,
+      unrealizedPnlPct: pos.unrealizedPnlPct,
+      totalPnlUsd: pos.unrealizedPnlUsd,
+      totalPnlPct: pos.unrealizedPnlPct,
+      status: "open",
+      firstTradeAt: firstTrade,
+      lastTradeAt: lastTrade,
+    });
+    setShareOpen(true);
+  }, [trades]);
+
   const openJournal = useCallback((mint: string, symbol: string) => {
     setJournalMint(mint);
     setJournalSymbol(symbol);
@@ -296,6 +355,9 @@ export function PositionsTable({ compact }: PositionsTableProps) {
   return (
     <>
       <div className="overflow-x-auto">
+      <div className="flex items-center justify-end px-4 py-1">
+        <LatencyIndicator lastUpdated={lastUpdated} />
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -307,6 +369,7 @@ export function PositionsTable({ compact }: PositionsTableProps) {
             <TableHead className="text-right">PnL</TableHead>
             <TableHead className="text-center w-10">SL/TP</TableHead>
             <TableHead className="text-center w-10">Journal</TableHead>
+            <TableHead className="text-center w-10">Share</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -320,6 +383,7 @@ export function PositionsTable({ compact }: PositionsTableProps) {
               hasOrders={allOrders.some((o) => o.mint === pos.token.mint)}
               onOpenSlTp={openSlTp}
               onOpenJournal={openJournal}
+              onShare={openShare}
             />
           ))}
         </TableBody>
@@ -517,6 +581,8 @@ export function PositionsTable({ compact }: PositionsTableProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <TradeCardDialog open={shareOpen} onOpenChange={setShareOpen} data={shareData} />
     </>
   );
 }

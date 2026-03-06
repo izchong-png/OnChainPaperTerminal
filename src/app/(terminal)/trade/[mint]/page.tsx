@@ -15,6 +15,7 @@ import { Token, DexScreenerPair } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { LatencyIndicator } from "@/components/ui/latency-indicator";
 
 export default function TradePage({
   params,
@@ -24,7 +25,7 @@ export default function TradePage({
   const { mint } = use(params);
   const [poolData, setPoolData] = useState<DexScreenerPair | null>(null);
   const [loading, setLoading] = useState(true);
-  const { price } = useTokenPrice(mint);
+  const { price, lastUpdated } = useTokenPrice(mint);
   const isWatched = useWatchlistStore((s) => s.isWatched(mint));
   const addToWatchlist = useWatchlistStore((s) => s.addToken);
   const removeFromWatchlist = useWatchlistStore((s) => s.removeToken);
@@ -120,9 +121,12 @@ export default function TradePage({
                 </Button>
                 <div className="ml-auto flex items-center gap-2 sm:gap-4 text-sm">
                   {price !== null && (
-                    <span className="font-mono font-semibold text-xs sm:text-sm">
-                      ${price < 0.01 ? price.toExponential(2) : price.toFixed(4)}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono font-semibold text-xs sm:text-sm">
+                        ${price < 0.01 ? price.toExponential(2) : price.toFixed(4)}
+                      </span>
+                      <LatencyIndicator lastUpdated={lastUpdated} />
+                    </div>
                   )}
                   {poolData?.priceChange?.h24 !== undefined && (
                     <span
