@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Download, Copy, X } from "lucide-react";
+import { useState } from "react";
+import { Download, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,8 +32,164 @@ function fmtDate(ts: number): string {
   return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+// Colors matching the app's dark theme
+const C = {
+  bg: "#09090b",
+  fg: "#e4e4e7",
+  muted: "#a1a1aa",
+  positive: "#4ade80",
+  destructive: "#f87171",
+  primary: "#4ade80",
+  primaryBg: "rgba(74, 222, 128, 0.15)",
+  cardBg: "#1c1c20",
+  border: "#27272a",
+};
+
+function drawCard(canvas: HTMLCanvasElement, data: TokenPnL) {
+  const scale = 2;
+  const w = 360;
+  const h = 420;
+  canvas.width = w * scale;
+  canvas.height = h * scale;
+  const ctx = canvas.getContext("2d")!;
+  ctx.scale(scale, scale);
+
+  const isPositive = data.totalPnlUsd >= 0;
+  const pnlColor = isPositive ? C.positive : C.destructive;
+
+  // Background
+  ctx.fillStyle = C.bg;
+  ctx.fillRect(0, 0, w, h);
+
+  // --- Header row (y=20) ---
+  // "P" logo box
+  ctx.fillStyle = C.primary;
+  ctx.beginPath();
+  ctx.roundRect(20, 18, 24, 24, 4);
+  ctx.fill();
+  ctx.fillStyle = C.bg;
+  ctx.font = "bold 12px system-ui, -apple-system, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("P", 32, 34);
+
+  // "Paper Terminal"
+  ctx.fillStyle = C.muted;
+  ctx.font = "500 12px system-ui, -apple-system, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("Paper Terminal", 52, 34);
+
+  // Status badge
+  const status = data.status.toUpperCase();
+  ctx.font = "600 10px system-ui, -apple-system, sans-serif";
+  const statusW = ctx.measureText(status).width + 12;
+  const statusX = w - 20 - statusW;
+  if (data.status === "open") {
+    ctx.fillStyle = C.primaryBg;
+  } else {
+    ctx.fillStyle = C.cardBg;
+  }
+  ctx.beginPath();
+  ctx.roundRect(statusX, 22, statusW, 18, 4);
+  ctx.fill();
+  ctx.fillStyle = data.status === "open" ? C.primary : C.muted;
+  ctx.textAlign = "center";
+  ctx.fillText(status, statusX + statusW / 2, 34);
+
+  // --- Token avatar + symbol (y=70) ---
+  // Letter circle
+  ctx.fillStyle = C.cardBg;
+  ctx.beginPath();
+  ctx.arc(w / 2 - 30, 80, 16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = C.fg;
+  ctx.font = "bold 14px system-ui, -apple-system, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(data.token.symbol.charAt(0), w / 2 - 30, 85);
+
+  // Symbol text
+  ctx.fillStyle = C.fg;
+  ctx.font = "bold 18px system-ui, -apple-system, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(data.token.symbol, w / 2 - 8, 86);
+
+  // --- Big PnL percentage (y=115) ---
+  ctx.fillStyle = pnlColor;
+  ctx.font = "900 36px ui-monospace, 'Courier New', monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(fmtPct(data.totalPnlPct), w / 2, 130);
+
+  // --- "I paper traded SYMBOL" (y=150) ---
+  ctx.fillStyle = C.muted;
+  ctx.font = "14px system-ui, -apple-system, sans-serif";
+  ctx.textAlign = "center";
+  const line = `I paper traded ${data.token.symbol}`;
+  ctx.fillText(line, w / 2, 155);
+
+  // --- Stats grid (y=180) ---
+  const gridX = 20;
+  const gridW = (w - 52) / 2;
+  const gridH = 52;
+  const gap = 12;
+
+  const stats = [
+    { label: "TOTAL P&L", value: fmtPnl(data.totalPnlUsd), color: pnlColor },
+    { label: "INVESTED", value: `$${data.totalBoughtUsd.toFixed(2)}`, color: C.fg },
+    { label: "REALIZED", value: fmtPnl(data.realizedPnlUsd), color: data.realizedPnlUsd >= 0 ? C.positive : C.destructive },
+    { label: "TRADES", value: `${data.totalBuys}B / ${data.totalSells}S`, color: C.fg },
+  ];
+
+  stats.forEach((stat, i) => {
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const x = gridX + col * (gridW + gap);
+    const y = 180 + row * (gridH + gap);
+
+    // Box background
+    ctx.fillStyle = C.cardBg;
+    ctx.beginPath();
+    ctx.roundRect(x, y, gridW, gridH, 8);
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle = C.muted;
+    ctx.font = "600 9px system-ui, -apple-system, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(stat.label, x + 10, y + 18);
+
+    // Value
+    ctx.fillStyle = stat.color;
+    ctx.font = "bold 14px ui-monospace, 'Courier New', monospace";
+    ctx.fillText(stat.value, x + 10, y + 38);
+  });
+
+  // --- Footer (y=320) ---
+  const footerY = 180 + 2 * (gridH + gap) + 16;
+
+  // Separator line
+  ctx.strokeStyle = C.border;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(20, footerY);
+  ctx.lineTo(w - 20, footerY);
+  ctx.stroke();
+
+  // Date range
+  ctx.fillStyle = C.muted;
+  ctx.font = "10px system-ui, -apple-system, sans-serif";
+  ctx.textAlign = "left";
+  let dateText = fmtDate(data.firstTradeAt);
+  if (data.lastTradeAt !== data.firstTradeAt) {
+    dateText += ` → ${fmtDate(data.lastTradeAt)}`;
+  }
+  ctx.fillText(dateText, 20, footerY + 18);
+
+  // URL
+  ctx.font = "10px ui-monospace, 'Courier New', monospace";
+  ctx.textAlign = "right";
+  ctx.fillText("solana-paper-trader.vercel.app", w - 20, footerY + 18);
+}
+
 export function TradeCardDialog({ open, onOpenChange, data }: TradeCardDialogProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
 
   if (!data) return null;
@@ -47,16 +203,11 @@ export function TradeCardDialog({ open, onOpenChange, data }: TradeCardDialogPro
     });
   };
 
-  const downloadImage = async () => {
-    if (!cardRef.current) return;
+  const downloadImage = () => {
     setDownloading(true);
     try {
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: "#09090b",
-        scale: 2,
-        ignoreElements: (el) => el.tagName === "IMG",
-      });
+      const canvas = document.createElement("canvas");
+      drawCard(canvas, data);
       const url = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       a.href = url;
@@ -78,9 +229,8 @@ export function TradeCardDialog({ open, onOpenChange, data }: TradeCardDialogPro
           <DialogDescription>Share your paper trade results</DialogDescription>
         </DialogHeader>
 
-        {/* The card to capture */}
+        {/* Card preview */}
         <div
-          ref={cardRef}
           className="p-5 space-y-4"
           style={{ background: "#09090b" }}
         >
