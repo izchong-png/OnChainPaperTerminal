@@ -55,7 +55,7 @@ export function TradeCardDialog({ open, onOpenChange, data }: TradeCardDialogPro
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: "#09090b",
         scale: 2,
-        useCORS: true,
+        ignoreElements: (el) => el.tagName === "IMG",
       });
       const url = canvas.toDataURL("image/png");
       const a = document.createElement("a");
@@ -106,18 +106,9 @@ export function TradeCardDialog({ open, onOpenChange, data }: TradeCardDialogPro
           {/* Token + Hero Line */}
           <div className="text-center space-y-1">
             <div className="flex items-center justify-center gap-2">
-              {data.token.logoURI ? (
-                <img
-                  src={data.token.logoURI}
-                  alt=""
-                  className="w-8 h-8 rounded-full"
-                  crossOrigin="anonymous"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-bold">
-                  {data.token.symbol.charAt(0)}
-                </div>
-              )}
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-bold">
+                {data.token.symbol.charAt(0)}
+              </div>
               <span className="font-bold text-lg">{data.token.symbol}</span>
             </div>
             <div
