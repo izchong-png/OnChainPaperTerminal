@@ -37,7 +37,7 @@ export function useTokenPrice(mint: string | null) {
       if (document.visibilityState === "visible") {
         fetchPrice();
       }
-    }, 5_000);
+    }, 2_000);
 
     return () => {
       clearInterval(interval);
