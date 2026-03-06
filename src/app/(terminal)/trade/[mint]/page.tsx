@@ -160,7 +160,7 @@ export default function TradePage({
           </div>
 
           {/* Chart */}
-          <div className="flex-1 min-h-[250px] md:min-h-[400px]">
+          <div>
             <ChartContainer pairAddress={poolData?.pairAddress ?? null} />
           </div>
         </div>
