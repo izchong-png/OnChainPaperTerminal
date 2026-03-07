@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
-import { CalendarDays, BookOpen, Share2 } from "lucide-react";
+import { CalendarDays, BookOpen, Share2, Copy, ImageIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -34,6 +34,7 @@ import { useHydration } from "@/hooks/use-hydration";
 import { usePnLData, type DailyPnL } from "@/hooks/use-pnl";
 import { useJournalStore } from "@/stores/journal-store";
 import { TradeCardDialog } from "@/components/share/trade-card";
+import { TotalPnLShareDialog } from "@/components/share/total-pnl-card";
 import { TokenPnL } from "@/types";
 
 function safe(n: number): number {
@@ -202,6 +203,7 @@ export default function PnLPage() {
 
   const [shareOpen, setShareOpen] = useState(false);
   const [shareData, setShareData] = useState<TokenPnL | null>(null);
+  const [totalShareOpen, setTotalShareOpen] = useState(false);
 
   const openJournal = (mint: string, symbol: string) => {
     setJournalMint(mint);
@@ -239,7 +241,18 @@ export default function PnLPage() {
   return (
     <div className="p-4 max-w-5xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="font-bold text-lg">Profit & Loss</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="font-bold text-lg">Profit & Loss</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-muted-foreground"
+            onClick={() => setTotalShareOpen(true)}
+            title="Share total P&L"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
             {pnlData.length} token{pnlData.length !== 1 ? "s" : ""} traded
@@ -557,6 +570,7 @@ export default function PnLPage() {
       </Dialog>
 
       <TradeCardDialog open={shareOpen} onOpenChange={setShareOpen} data={shareData} />
+      <TotalPnLShareDialog open={totalShareOpen} onOpenChange={setTotalShareOpen} totals={totals} tokenCount={pnlData.length} />
     </div>
   );
 }
