@@ -30,6 +30,7 @@ export default function TradePage({
   const addToWatchlist = useWatchlistStore((s) => s.addToken);
   const removeFromWatchlist = useWatchlistStore((s) => s.removeToken);
   const [copied, setCopied] = useState(false);
+  const [showMcap, setShowMcap] = useState(false);
 
   const copyAddress = useCallback(() => {
     navigator.clipboard.writeText(mint).then(() => {
@@ -121,10 +122,31 @@ export default function TradePage({
                 </Button>
                 <div className="ml-auto flex items-center gap-2 sm:gap-4 text-sm">
                   {price !== null && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-semibold text-xs sm:text-sm">
-                        ${price < 0.01 ? price.toExponential(2) : price.toFixed(4)}
-                      </span>
+                    <div
+                      className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => setShowMcap(!showMcap)}
+                      title={showMcap ? "Click to show price" : "Click to show market cap"}
+                    >
+                      {showMcap ? (
+                        <>
+                          <span className="text-[10px] text-muted-foreground">MC</span>
+                          <span className="font-mono font-semibold text-xs sm:text-sm">
+                            {poolData?.marketCap
+                              ? poolData.marketCap >= 1e9
+                                ? `$${(poolData.marketCap / 1e9).toFixed(2)}B`
+                                : poolData.marketCap >= 1e6
+                                  ? `$${(poolData.marketCap / 1e6).toFixed(2)}M`
+                                  : poolData.marketCap >= 1e3
+                                    ? `$${(poolData.marketCap / 1e3).toFixed(1)}K`
+                                    : `$${poolData.marketCap.toFixed(0)}`
+                              : "-"}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="font-mono font-semibold text-xs sm:text-sm">
+                          ${price < 0.01 ? price.toExponential(2) : price.toFixed(4)}
+                        </span>
+                      )}
                       <LatencyIndicator lastUpdated={lastUpdated} />
                     </div>
                   )}
