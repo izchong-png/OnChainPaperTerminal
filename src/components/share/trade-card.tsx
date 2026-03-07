@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Download, Copy, ImageIcon } from "lucide-react";
+import { OwlLogo } from "@/components/ui/owl-logo";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +46,65 @@ const C = {
   border: "#27272a",
 };
 
+function drawOwl(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  const s = size / 24; // scale factor from 24x24 viewBox
+  // Ear tufts
+  ctx.fillStyle = "#4ade80";
+  ctx.beginPath();
+  ctx.moveTo(x + 5 * s, y + 8 * s);
+  ctx.lineTo(x + 3.5 * s, y + 2.5 * s);
+  ctx.lineTo(x + 9 * s, y + 6.5 * s);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x + 19 * s, y + 8 * s);
+  ctx.lineTo(x + 20.5 * s, y + 2.5 * s);
+  ctx.lineTo(x + 15 * s, y + 6.5 * s);
+  ctx.closePath();
+  ctx.fill();
+  // Body
+  ctx.beginPath();
+  ctx.ellipse(x + 12 * s, y + 14 * s, 9 * s, 9.5 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Belly
+  ctx.fillStyle = "#86efac";
+  ctx.beginPath();
+  ctx.ellipse(x + 12 * s, y + 17 * s, 5.5 * s, 5 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Eyes white
+  ctx.fillStyle = "white";
+  ctx.beginPath();
+  ctx.arc(x + 8.5 * s, y + 11.5 * s, 3.8 * s, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x + 15.5 * s, y + 11.5 * s, 3.8 * s, 0, Math.PI * 2);
+  ctx.fill();
+  // Pupils
+  ctx.fillStyle = "#0f172a";
+  ctx.beginPath();
+  ctx.arc(x + 9.2 * s, y + 11.5 * s, 2.2 * s, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x + 16.2 * s, y + 11.5 * s, 2.2 * s, 0, Math.PI * 2);
+  ctx.fill();
+  // Eye shine
+  ctx.fillStyle = "white";
+  ctx.beginPath();
+  ctx.arc(x + 10 * s, y + 10.5 * s, 0.9 * s, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x + 17 * s, y + 10.5 * s, 0.9 * s, 0, Math.PI * 2);
+  ctx.fill();
+  // Beak
+  ctx.fillStyle = "#facc15";
+  ctx.beginPath();
+  ctx.moveTo(x + 10.5 * s, y + 15 * s);
+  ctx.lineTo(x + 12 * s, y + 17.5 * s);
+  ctx.lineTo(x + 13.5 * s, y + 15 * s);
+  ctx.closePath();
+  ctx.fill();
+}
+
 function drawCard(canvas: HTMLCanvasElement, data: TokenPnL) {
   const scale = 2;
   const w = 360;
@@ -62,21 +122,14 @@ function drawCard(canvas: HTMLCanvasElement, data: TokenPnL) {
   ctx.fillRect(0, 0, w, h);
 
   // --- Header row (y=20) ---
-  // "P" logo box
-  ctx.fillStyle = C.primary;
-  ctx.beginPath();
-  ctx.roundRect(20, 18, 24, 24, 4);
-  ctx.fill();
-  ctx.fillStyle = C.bg;
-  ctx.font = "bold 12px system-ui, -apple-system, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("P", 32, 34);
+  // Owl logo
+  drawOwl(ctx, 18, 17, 26);
 
-  // "Paper Terminal"
+  // "PaperTerminal"
   ctx.fillStyle = C.muted;
   ctx.font = "500 12px system-ui, -apple-system, sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText("Paper Terminal", 52, 34);
+  ctx.fillText("PaperTerminal", 50, 34);
 
   // Status badge
   const status = data.status.toUpperCase();
@@ -197,7 +250,7 @@ export function TradeCardDialog({ open, onOpenChange, data }: TradeCardDialogPro
   const isPositive = data.totalPnlUsd >= 0;
 
   const copyText = () => {
-    const text = `I paper traded $${data.token.symbol} ${fmtPct(data.totalPnlPct)} (${fmtPnl(data.totalPnlUsd)}) on Paper Terminal\n\nInvested: $${data.totalBoughtUsd.toFixed(2)} | ${data.totalBuys}B/${data.totalSells}S | ${data.status.toUpperCase()}\n\nsolana-paper-trader.vercel.app`;
+    const text = `I paper traded $${data.token.symbol} ${fmtPct(data.totalPnlPct)} (${fmtPnl(data.totalPnlUsd)}) on PaperTerminal\n\nInvested: $${data.totalBoughtUsd.toFixed(2)} | ${data.totalBuys}B/${data.totalSells}S | ${data.status.toUpperCase()}\n\nsolana-paper-trader.vercel.app`;
     navigator.clipboard.writeText(text).then(() => {
       toast.success("Copied to clipboard");
     });
@@ -252,11 +305,9 @@ export function TradeCardDialog({ open, onOpenChange, data }: TradeCardDialogPro
         >
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-primary flex items-center justify-center text-primary-foreground text-xs font-black">
-                P
-              </div>
-              <span className="text-xs text-muted-foreground font-medium">Paper Terminal</span>
+            <div className="flex items-center gap-1.5">
+              <OwlLogo size={24} />
+              <span className="text-xs text-muted-foreground font-medium">PaperTerminal</span>
             </div>
             <span
               className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${

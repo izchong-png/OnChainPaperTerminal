@@ -18,6 +18,7 @@ import { usePortfolioStore } from "@/stores/portfolio-store";
 import { useHydration } from "@/hooks/use-hydration";
 import { SOL_MINT } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
+import { OwlLogo } from "@/components/ui/owl-logo";
 
 export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -53,11 +54,9 @@ export function Header() {
             {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
 
-          <Link href="/" className="flex items-center gap-2 font-bold text-sm shrink-0">
-            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center text-primary-foreground text-xs font-black">
-              P
-            </div>
-            <span className="hidden sm:inline">Paper Terminal</span>
+          <Link href="/" className="flex items-center gap-1.5 font-bold text-sm shrink-0">
+            <OwlLogo size={26} />
+            <span className="hidden sm:inline">PaperTerminal</span>
           </Link>
 
           <Button
@@ -161,7 +160,7 @@ export function Header() {
       <Dialog open={addSolOpen} onOpenChange={setAddSolOpen}>
         <DialogContent className="max-w-xs">
           <DialogHeader>
-            <DialogTitle>Add Paper SOL</DialogTitle>
+            <DialogTitle>Add SOL</DialogTitle>
             <DialogDescription>
               Top up your paper trading balance.
             </DialogDescription>

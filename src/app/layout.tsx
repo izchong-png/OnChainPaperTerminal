@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Paper Terminal - Solana Paper Trading",
+  title: "PaperTerminal - Solana Paper Trading",
   description: "Simulate Solana token trading with real-time prices",
 };
 
