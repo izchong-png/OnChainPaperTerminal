@@ -235,12 +235,16 @@ export function PositionsTable({ compact }: PositionsTableProps) {
   const [slTpSymbol, setSlTpSymbol] = useState("");
   const [slInput, setSlInput] = useState("");
   const [tpInput, setTpInput] = useState("");
+  const [slAmountPct, setSlAmountPct] = useState(100);
+  const [tpAmountPct, setTpAmountPct] = useState(100);
 
   const openSlTp = useCallback((mint: string, symbol: string) => {
     setSlTpMint(mint);
     setSlTpSymbol(symbol);
     setSlInput("");
     setTpInput("");
+    setSlAmountPct(100);
+    setTpAmountPct(100);
     setSlTpOpen(true);
   }, []);
 
@@ -253,8 +257,9 @@ export function PositionsTable({ compact }: PositionsTableProps) {
     const trigger = parseFloat(slInput);
     if (!trigger || trigger <= 0) { toast.error("Enter a valid market cap"); return; }
     if (trigger >= slTpMcap) { toast.error("SL must be below current MC"); return; }
-    addOrder({ mint: slTpMint, token: slTpToken, type: "stop_loss", triggerMcap: trigger, amount: slTpBalance });
-    toast.success(`Stop loss set for ${slTpSymbol} at MC $${fmtMcap(trigger)}`);
+    const sellAmount = slTpBalance * (slAmountPct / 100);
+    addOrder({ mint: slTpMint, token: slTpToken, type: "stop_loss", triggerMcap: trigger, amount: sellAmount });
+    toast.success(`SL set for ${slAmountPct}% of ${slTpSymbol} at MC $${fmtMcap(trigger)}`);
     setSlInput("");
   };
 
@@ -263,8 +268,9 @@ export function PositionsTable({ compact }: PositionsTableProps) {
     const trigger = parseFloat(tpInput);
     if (!trigger || trigger <= 0) { toast.error("Enter a valid market cap"); return; }
     if (trigger <= slTpMcap) { toast.error("TP must be above current MC"); return; }
-    addOrder({ mint: slTpMint, token: slTpToken, type: "take_profit", triggerMcap: trigger, amount: slTpBalance });
-    toast.success(`Take profit set for ${slTpSymbol} at MC $${fmtMcap(trigger)}`);
+    const sellAmount = slTpBalance * (tpAmountPct / 100);
+    addOrder({ mint: slTpMint, token: slTpToken, type: "take_profit", triggerMcap: trigger, amount: sellAmount });
+    toast.success(`TP set for ${tpAmountPct}% of ${slTpSymbol} at MC $${fmtMcap(trigger)}`);
     setTpInput("");
   };
 
@@ -477,6 +483,28 @@ export function PositionsTable({ compact }: PositionsTableProps) {
                   </Button>
                 ))}
               </div>
+              {/* SL sell amount */}
+              <div className="space-y-1 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">Sell amount</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">
+                    {fmtAmount(slTpBalance * slAmountPct / 100)} {slTpSymbol} ({slAmountPct}%)
+                  </span>
+                </div>
+                <div className="flex gap-1">
+                  {[25, 50, 75, 100].map((pct) => (
+                    <Button
+                      key={pct}
+                      variant={slAmountPct === pct ? "default" : "outline"}
+                      size="sm"
+                      className="flex-1 h-6 text-[10px] px-1"
+                      onClick={() => setSlAmountPct(pct)}
+                    >
+                      {pct}%
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Take Profit */}
@@ -519,6 +547,28 @@ export function PositionsTable({ compact }: PositionsTableProps) {
                     +{pct}%
                   </Button>
                 ))}
+              </div>
+              {/* TP sell amount */}
+              <div className="space-y-1 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">Sell amount</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">
+                    {fmtAmount(slTpBalance * tpAmountPct / 100)} {slTpSymbol} ({tpAmountPct}%)
+                  </span>
+                </div>
+                <div className="flex gap-1">
+                  {[25, 50, 75, 100].map((pct) => (
+                    <Button
+                      key={pct}
+                      variant={tpAmountPct === pct ? "default" : "outline"}
+                      size="sm"
+                      className="flex-1 h-6 text-[10px] px-1"
+                      onClick={() => setTpAmountPct(pct)}
+                    >
+                      {pct}%
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
 
