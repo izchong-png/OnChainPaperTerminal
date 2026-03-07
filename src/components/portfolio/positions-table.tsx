@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
-import { BookOpen, ShieldAlert, Target, X, Clock, Share2 } from "lucide-react";
+import { BookOpen, ShieldAlert, Target, X, Clock, Share2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import {
   Table,
@@ -222,7 +222,8 @@ export function PositionsTable({ compact }: PositionsTableProps) {
   const hydrated = useHydration();
   const balances = usePortfolioStore((s) => s.balances);
   const holdingMints = useMemo(() => Object.keys(balances), [balances]);
-  const { prices, marketCaps, loading: pricesLoading, lastUpdated } = useTokenPrices(holdingMints);
+  const { prices, marketCaps, loading: pricesLoading, lastUpdated, refetch } = useTokenPrices(holdingMints);
+  const [refreshing, setRefreshing] = useState(false);
 
   const journalEntries = useJournalStore((s) => s.entries);
   const setJournalEntry = useJournalStore((s) => s.setEntry);
@@ -368,8 +369,19 @@ export function PositionsTable({ compact }: PositionsTableProps) {
   return (
     <>
       <div className="overflow-x-auto">
-      <div className="flex items-center justify-end px-4 py-1">
+      <div className="flex items-center justify-end gap-1.5 px-4 py-1">
         <LatencyIndicator lastUpdated={lastUpdated} />
+        <button
+          className="text-muted-foreground hover:text-foreground transition-colors"
+          onClick={async () => {
+            setRefreshing(true);
+            await refetch();
+            setRefreshing(false);
+          }}
+          title="Refresh prices"
+        >
+          <RefreshCw className={`h-3 w-3 ${refreshing ? "animate-spin" : ""}`} />
+        </button>
       </div>
       <Table>
         <TableHeader>

@@ -110,5 +110,5 @@ export function useTokenPrices(mints: string[]) {
     };
   }, [fetchPrices]);
 
-  return { prices, marketCaps, loading, lastUpdated };
+  return { prices, marketCaps, loading, lastUpdated, refetch: fetchPrices };
 }
