@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     // Use DexScreener batch token endpoint (free, no key)
     const res = await fetch(
       `https://api.dexscreener.com/tokens/v1/solana/${ids}`,
-      { next: { revalidate: 10 } }
+      { cache: "no-store" }
     );
     const pairs = await res.json();
 
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ prices, marketCaps }, {
-      headers: { "Cache-Control": "s-maxage=10, stale-while-revalidate=30" },
+      headers: { "Cache-Control": "no-cache, no-store, must-revalidate" },
     });
   } catch {
     return NextResponse.json({ error: "Price fetch failed" }, { status: 500 });

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { getPrices, fetchPriceData } from "@/lib/api/jupiter";
+import { fetchPriceData } from "@/lib/api/jupiter";
 
 export function useTokenPrice(mint: string | null) {
   const [price, setPrice] = useState<number | null>(null);
+  const [marketCap, setMarketCap] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -15,9 +16,14 @@ export function useTokenPrice(mint: string | null) {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const prices = await getPrices([mint]);
-      if (!controller.signal.aborted && prices[mint] !== undefined) {
-        setPrice(prices[mint]);
+      const data = await fetchPriceData([mint]);
+      if (!controller.signal.aborted) {
+        if (data.prices[mint] !== undefined) {
+          setPrice(data.prices[mint]);
+        }
+        if (data.marketCaps[mint] !== undefined) {
+          setMarketCap(data.marketCaps[mint]);
+        }
         setLastUpdated(Date.now());
       }
     } catch {
@@ -40,7 +46,7 @@ export function useTokenPrice(mint: string | null) {
       if (document.visibilityState === "visible") {
         fetchPrice();
       }
-    }, 2_000);
+    }, 1_000);
 
     return () => {
       clearInterval(interval);
@@ -48,7 +54,7 @@ export function useTokenPrice(mint: string | null) {
     };
   }, [fetchPrice]);
 
-  return { price, loading, lastUpdated };
+  return { price, marketCap, loading, lastUpdated };
 }
 
 export function useTokenPrices(mints: string[]) {
@@ -96,7 +102,7 @@ export function useTokenPrices(mints: string[]) {
       if (document.visibilityState === "visible") {
         fetchPrices();
       }
-    }, 5_000);
+    }, 3_000);
 
     return () => {
       clearInterval(interval);

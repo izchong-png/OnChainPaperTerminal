@@ -25,7 +25,7 @@ export default function TradePage({
   const { mint } = use(params);
   const [poolData, setPoolData] = useState<DexScreenerPair | null>(null);
   const [loading, setLoading] = useState(true);
-  const { price, lastUpdated } = useTokenPrice(mint);
+  const { price, marketCap: liveMcap, lastUpdated } = useTokenPrice(mint);
   const isWatched = useWatchlistStore((s) => s.isWatched(mint));
   const addToWatchlist = useWatchlistStore((s) => s.addToken);
   const removeFromWatchlist = useWatchlistStore((s) => s.removeToken);
@@ -131,14 +131,14 @@ export default function TradePage({
                         <>
                           <span className="text-[10px] text-muted-foreground">MC</span>
                           <span className="font-mono font-semibold text-xs sm:text-sm">
-                            {poolData?.marketCap
-                              ? poolData.marketCap >= 1e9
-                                ? `$${(poolData.marketCap / 1e9).toFixed(2)}B`
-                                : poolData.marketCap >= 1e6
-                                  ? `$${(poolData.marketCap / 1e6).toFixed(2)}M`
-                                  : poolData.marketCap >= 1e3
-                                    ? `$${(poolData.marketCap / 1e3).toFixed(1)}K`
-                                    : `$${poolData.marketCap.toFixed(0)}`
+                            {liveMcap
+                              ? liveMcap >= 1e9
+                                ? `$${(liveMcap / 1e9).toFixed(2)}B`
+                                : liveMcap >= 1e6
+                                  ? `$${(liveMcap / 1e6).toFixed(2)}M`
+                                  : liveMcap >= 1e3
+                                    ? `$${(liveMcap / 1e3).toFixed(1)}K`
+                                    : `$${liveMcap.toFixed(0)}`
                               : "-"}
                           </span>
                         </>
@@ -189,7 +189,7 @@ export default function TradePage({
 
         {/* Swap Panel */}
         <div className="w-full lg:w-[340px] shrink-0">
-          <SwapPanel defaultOutputToken={token ?? undefined} marketCap={poolData?.marketCap ?? null} />
+          <SwapPanel defaultOutputToken={token ?? undefined} marketCap={liveMcap ?? poolData?.marketCap ?? null} />
         </div>
       </div>
 
@@ -208,7 +208,7 @@ export default function TradePage({
           <PositionSizeCalculator
             tokenSymbol={token?.symbol ?? null}
             tokenPrice={price}
-            marketCap={poolData?.marketCap ?? null}
+            marketCap={liveMcap ?? poolData?.marketCap ?? null}
           />
         </div>
       </div>
