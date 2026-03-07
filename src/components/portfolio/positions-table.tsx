@@ -70,6 +70,7 @@ interface PositionRowProps {
   pricesLoading: boolean;
   hasJournal: boolean;
   hasOrders: boolean;
+  entryMcap: number;
   onOpenSlTp: (mint: string, symbol: string) => void;
   onOpenJournal: (mint: string, symbol: string) => void;
   onShare: (pos: Position) => void;
@@ -81,6 +82,7 @@ const PositionRow = memo(function PositionRow({
   pricesLoading,
   hasJournal,
   hasOrders,
+  entryMcap,
   onOpenSlTp,
   onOpenJournal,
   onShare,
@@ -114,6 +116,11 @@ const PositionRow = memo(function PositionRow({
       {!compact && (
         <TableCell className="text-right font-mono text-sm py-2">
           {pos.costBasisPerToken > 0 ? fmtUsd(pos.costBasisPerToken) : "-"}
+        </TableCell>
+      )}
+      {!compact && (
+        <TableCell className="text-right font-mono text-sm py-2">
+          {entryMcap > 0 ? `$${fmtMcap(entryMcap)}` : "-"}
         </TableCell>
       )}
       <TableCell className="text-right font-mono text-sm py-2">
@@ -370,6 +377,7 @@ export function PositionsTable({ compact }: PositionsTableProps) {
             <TableHead>Token</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             {!compact && <TableHead className="text-right">Avg Entry</TableHead>}
+            {!compact && <TableHead className="text-right">Entry MC</TableHead>}
             <TableHead className="text-right">Price</TableHead>
             <TableHead className="text-right">Value</TableHead>
             <TableHead className="text-right">PnL</TableHead>
@@ -379,7 +387,12 @@ export function PositionsTable({ compact }: PositionsTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {positions.map((pos) => (
+          {positions.map((pos) => {
+            const currentMcap = marketCaps[pos.token.mint] ?? 0;
+            const entryMcap = pos.currentPriceUsd > 0 && pos.costBasisPerToken > 0
+              ? (pos.costBasisPerToken / pos.currentPriceUsd) * currentMcap
+              : 0;
+            return (
             <PositionRow
               key={pos.token.mint}
               pos={pos}
@@ -387,11 +400,13 @@ export function PositionsTable({ compact }: PositionsTableProps) {
               pricesLoading={pricesLoading}
               hasJournal={!!journalEntries[pos.token.mint]?.text}
               hasOrders={allOrders.some((o) => o.mint === pos.token.mint)}
+              entryMcap={safe(entryMcap)}
               onOpenSlTp={openSlTp}
               onOpenJournal={openJournal}
               onShare={openShare}
             />
-          ))}
+            );
+          })}
         </TableBody>
       </Table>
       </div>
